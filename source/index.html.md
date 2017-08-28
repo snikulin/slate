@@ -1,14 +1,10 @@
 ---
-title: API Reference
+title: Verbatoria API
 
 language_tabs: # must be one of https://git.io/vQNgJ
   - shell
-  - ruby
-  - python
-  - javascript
 
 toc_footers:
-  - <a href='#'>Sign Up for a Developer Key</a>
   - <a href='https://github.com/tripit/slate'>Documentation Powered by Slate</a>
 
 includes:
@@ -19,221 +15,352 @@ search: true
 
 # Introduction
 
-Welcome to the Kittn API! You can use our API to access Kittn API endpoints, which can get information on various cats, kittens, and breeds in our database.
+Взаимодействие с Backend осуществляется по HTTPS протоколу, используя REST API,
+формат данных - JSON.
 
-We have language bindings in Shell, Ruby, and Python! You can view code examples in the dark area to the right, and you can switch the programming language of the examples with the tabs in the top right.
+## Выполнение запросов, требующих авторизации
 
-This example API documentation page was created with [Slate](https://github.com/tripit/slate). Feel free to edit it and use it as a base for your own API's documentation.
+При выполнении запросов API, которые требуют авторизации, необходимо передавать
+в HTTP заголовке с именем *access_token* токен возвращенный сервером после
+авторизации.
 
-# Authentication
 
-> To authorize, use this code:
+# Авторизация Нейрометриста
 
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-```
-
-```python
-import kittn
-
-api = kittn.authorize('meowmeowmeow')
-```
+> Пример кода
 
 ```shell
-# With shell, you can just pass the correct header with each request
-curl "api_endpoint_here"
-  -H "Authorization: meowmeowmeow"
+curl "http://verbatoria.ru/api/v1/session.json" --request POST --data-binary
+'{"phone":"+79031234567", "password":"Str0nGpa$s"}'
 ```
 
-```javascript
-const kittn = require('kittn');
+> Ответ
 
-let api = kittn.authorize('meowmeowmeow');
+```json
+{
+  "access_token": "7827nd88ju98dj29084d28j9048",
+  "expires_at": "2017-10-17T23:10:01.770+04:00"
+}
 ```
+> TODO: добавить возврат состояния сессии - активен ли партнер и достаточно
+> средств на балансе
 
-> Make sure to replace `meowmeowmeow` with your API key.
+### HTTP Request
 
-Kittn uses API keys to allow access to the API. You can register a new Kittn API key at our [developer portal](http://example.com/developers).
+`POST http://verbatoria.ru/api/v1/session.json`
 
-Kittn expects for the API key to be included in all API requests to the server in a header that looks like the following:
+### Параметры
 
-`Authorization: meowmeowmeow`
+Parameter | Required | Description
+--------- | ------- | -----------
+phone | true | Телефон пользователя
+password | true | Пароль пользователя
 
-<aside class="notice">
-You must replace <code>meowmeowmeow</code> with your personal API key.
+<aside>
+При успешной авторизации код ответа 201, при неуспешной 422
 </aside>
 
-# Kittens
+# Получение информации об авторизованном Нейрометристе
 
-## Get All Kittens
+<aside>
+Данный метод требует валидной сессии. Необходимо передать  *access_token* в
+заголовке HTTP запроса.
+</aside>
 
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-api.kittens.get
-```
-
-```python
-import kittn
-
-api = kittn.authorize('meowmeowmeow')
-api.kittens.get()
-```
+> Пример кода
 
 ```shell
-curl "http://example.com/api/kittens"
-  -H "Authorization: meowmeowmeow"
+curl "http://verbatoria.ru/api/v1/verbatolog/current.json" 
+--header "access_token: 7827nd88ju98dj29084d28j9048"
 ```
 
-```javascript
-const kittn = require('kittn');
+> Ответ
 
-let api = kittn.authorize('meowmeowmeow');
-let kittens = api.kittens.get();
+```json
+{
+  "first_name": "Иван",
+  "last_name": "Иванов",
+  "middle_name": "Иванович",
+  "phone": "+79031234567",
+  "email": "ivan@ivanov.ru"
+}
 ```
 
-> The above command returns JSON structured like this:
+### HTTP Request
+
+`GET http://verbatoria.ru/api/v1/verbatolog/current.json`
+
+# Получение списка запланированных сеансов для текущего нейрометриста
+
+<aside>
+Данный метод требует валидной сессии. Необходимо передать  *access_token* в
+заголовке HTTP запроса.
+</aside>
+
+> Пример кода
+
+```shell
+curl "http://verbatoria.ru/api/v1/verbatolog/current/events.json"
+--header "access_token: 7827nd88ju98dj29084d28j9048"
+```
+
+> Ответ
 
 ```json
 [
   {
     "id": 1,
-    "name": "Fluffums",
-    "breed": "calico",
-    "fluffiness": 6,
-    "cuteness": 7
-  },
-  {
-    "id": 2,
-    "name": "Max",
-    "breed": "unknown",
-    "fluffiness": 5,
-    "cuteness": 10
+    "start_at": "2017-05-01T12:00:00.000+04:00",
+    "end_at": "2017-05-01T13:00:00.000+04:00",
+    "child": {
+      "id": 1,
+      "name": "Василий Пупкин",
+      "birth_day": "2007-01-01"
+    }
   }
 ]
 ```
 
-This endpoint retrieves all kittens.
-
 ### HTTP Request
 
-`GET http://example.com/api/kittens`
+`GET http://verbatoria.ru/api/v1/verbatolog/current/events.json`
 
-### Query Parameters
+# Старт сессии нейрометрии
 
-Parameter | Default | Description
---------- | ------- | -----------
-include_cats | false | If set to true, the result will also include cats.
-available | true | If set to false, the result will include kittens that have already been adopted.
-
-<aside class="success">
-Remember — a happy kitten is an authenticated kitten!
+<aside>
+Данный метод требует валидной сессии. Необходимо передать  *access_token* в
+заголовке HTTP запроса.
 </aside>
 
-## Get a Specific Kitten
-
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-api.kittens.get(2)
-```
-
-```python
-import kittn
-
-api = kittn.authorize('meowmeowmeow')
-api.kittens.get(2)
-```
+> Пример кода
 
 ```shell
-curl "http://example.com/api/kittens/2"
-  -H "Authorization: meowmeowmeow"
+curl "http://verbatoria.ru/api/v1/reports.json" --request POST
+--data-binary '{"event_id":10}'
+--header "access_token: 7827nd88ju98dj29084d28j9048"
 ```
 
-```javascript
-const kittn = require('kittn');
+> Ответ
 
-let api = kittn.authorize('meowmeowmeow');
-let max = api.kittens.get(2);
-```
+При успешной обработке заброса возвращается HTTP статус 201. В случае, если
+переданный event_id принадлежит другому нейрометристу, будет возвращен HTTP
+статус 404.
 
-> The above command returns JSON structured like this:
+При успешной обработке, возвращается объект report, id которого будет нужен для
+записи результатов измерений.
 
 ```json
 {
-  "id": 2,
-  "name": "Max",
-  "breed": "unknown",
-  "fluffiness": 5,
-  "cuteness": 10
+  "id": 1,
+  "child_id": 10,
+  "verbatolog_id": 11,
+  "location_id": 2,
+  "created_at": "2017-05-01T12:00:00.000+04:00",
+  "updated_at": "2017-05-01T12:00:00.000+04:00"
 }
 ```
 
-This endpoint retrieves a specific kitten.
-
-<aside class="warning">Inside HTML code blocks like this one, you can't use Markdown, so use <code>&lt;code&gt;</code> blocks to denote code.</aside>
-
 ### HTTP Request
 
-`GET http://example.com/kittens/<ID>`
+`POST http://verbatoria.ru/api/v1/reports.json`
 
-### URL Parameters
+# Добавление результатов измерения в открытую сессию нейрометрии
 
-Parameter | Description
---------- | -----------
-ID | The ID of the kitten to retrieve
+<aside>
+Данный метод требует валидной сессии. Необходимо передать  *access_token* в
+заголовке HTTP запроса.
+</aside>
 
-## Delete a Specific Kitten
-
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-api.kittens.delete(2)
-```
-
-```python
-import kittn
-
-api = kittn.authorize('meowmeowmeow')
-api.kittens.delete(2)
-```
+> Пример кода
 
 ```shell
-curl "http://example.com/api/kittens/2"
-  -X DELETE
-  -H "Authorization: meowmeowmeow"
+curl "http://verbatoria.ru/api/v1/reports/5/measurement.json" --request POST
+--data-binary '{"measurement":{"action_id":0,"attention":-1,"bci_id":null,"block":null,
+"created_at":null,"delta":16777095,"device_id":null,"event_id":null,"high_alpha":16777154,
+"high_beta":16777158,"logoped_mode_id":null,"low_alpha":4395,"low_beta":16777200,
+"low_gamma":16777158,"mediation":0,"mid_gamma":6694,"mistake":null,"report_id":0,
+"reserve_blank1":null,"reserve_blank2":null,"theta":16777140,"updated_at":null,"word":null}}'
+--header "access_token: 7827nd88ju98dj29084d28j9048"
 ```
 
-```javascript
-const kittn = require('kittn');
+> Ответ
 
-let api = kittn.authorize('meowmeowmeow');
-let max = api.kittens.delete(2);
-```
+При успешной обработке заброса возвращается HTTP статус 201. В случае, если
+переданный event_id принадлежит другому нейрометристу, будет возвращен HTTP
+статус 404.
 
-> The above command returns JSON structured like this:
-
-```json
-{
-  "id": 2,
-  "deleted" : ":("
-}
-```
-
-This endpoint retrieves a specific kitten.
 
 ### HTTP Request
 
-`DELETE http://example.com/kittens/<ID>`
+`POST http://verbatoria.ru/api/v1/reports/:report_id:/measurement.json`
 
-### URL Parameters
+# Закрытие сессии нейрометрии
 
-Parameter | Description
---------- | -----------
-ID | The ID of the kitten to delete
+После добавления всех результатов измерения, сессия нейрометрии должна быть
+закрыто.
+*Важно* - закрыть можно сессию только в том случае, если добавлены не пустые
+данные о ребенке (имя и дата рождения)
 
+> Пример кода
+
+```shell
+curl "http://verbatoria.ru/api/v1/reports/5/finalize.json" --request POST
+--header "access_token: 7827nd88ju98dj29084d28j9048"
+```
+> Ответ
+
+При успешной обработке заброса возвращается HTTP статус 201. В случае, если
+данные по ребенку не были заполнены, вернется статус 400.
+
+# Работа с клиентами
+
+## Добавление
+
+<aside>
+Данный метод требует валидной сессии. Необходимо передать  *access_token* в
+заголовке HTTP запроса.
+</aside>
+
+> Пример кода
+
+```shell
+curl "http://verbatoria.ru/api/v1/clients.json" --request POST
+--data-binary '{"name":"Ivan","email":"email@example.com","phone":"+79031112233"}'
+--header "access_token: 7827nd88ju98dj29084d28j9048"
+```
+> Ответ
+
+При успешной обработке заброса возвращается HTTP статус 201. В случае, если
+не удалось добавить клиента HTTP статус 400
+
+### HTTP Request
+
+`POST http://verbatoria.ru/api/v1/clients.json`
+
+### Параметры
+
+Parameter | Required | Description
+--------- | ------- | -----------
+name | true | Имя клиента
+email | true | Email клиента
+phone | false | Телефон клиента
+
+## Изменение
+
+<aside>
+Данный метод требует валидной сессии. Необходимо передать  *access_token* в
+заголовке HTTP запроса.
+</aside>
+
+> Пример кода
+
+```shell
+curl "http://verbatoria.ru/api/v1/clients/10.json" --request PUT
+--data-binary '{"client": {"name":"Ivan","email":"email@example.com","phone":"+79031112233"}}'
+--header "access_token: 7827nd88ju98dj29084d28j9048"
+```
+> Ответ
+
+При успешной обработке заброса возвращается HTTP статус 200. В случае, если
+не удалось изменить клиента HTTP статус 400
+
+### HTTP Request
+
+`PUT http://verbatoria.ru/api/v1/clients/:client_id:.json`
+
+### Параметры
+
+Parameter | Required | Description
+--------- | ------- | -----------
+name | true | Имя клиента
+email | true | Email клиента
+phone | false | Телефон клиента
+
+## Просмотр
+
+<aside>
+Данный метод требует валидной сессии. Необходимо передать  *access_token* в
+заголовке HTTP запроса.
+</aside>
+
+> Пример кода
+
+```shell
+curl "http://verbatoria.ru/api/v1/clients/10.json"
+--header "access_token: 7827nd88ju98dj29084d28j9048"
+```
+# Работа с данными о детях
+
+## Добавление
+
+<aside>
+Данный метод требует валидной сессии. Необходимо передать  *access_token* в
+заголовке HTTP запроса.
+</aside>
+
+> Пример кода
+
+```shell
+curl "http://verbatoria.ru/api/v1/clients/10/children.json" --request POST
+--data-binary '{"child":{"name":"Ivan","birth_day":"2010-01-01"}}'
+--header "access_token: 7827nd88ju98dj29084d28j9048"
+```
+> Ответ
+
+При успешной обработке заброса возвращается HTTP статус 201. В случае, если
+не удалось добавить данные HTTP статус 400
+
+### HTTP Request
+
+`POST http://verbatoria.ru/api/v1/clients/:client_id:/children.json`
+
+### Параметры
+
+Parameter | Required | Description
+--------- | ------- | -----------
+name | true | Имя ребенка
+birth_day | true | Дата рождения ребенка
+
+## Изменение
+
+<aside>
+Данный метод требует валидной сессии. Необходимо передать  *access_token* в
+заголовке HTTP запроса.
+</aside>
+
+> Пример кода
+
+```shell
+curl "http://verbatoria.ru/api/v1/clients/10/children/50.json" --request PUT
+--data-binary '{"child":{"name":"Ivan","birth_day":"2010-01-01"}}'
+--header "access_token: 7827nd88ju98dj29084d28j9048"
+```
+> Ответ
+
+При успешной обработке заброса возвращается HTTP статус 200. В случае, если
+не удалось изменить данные HTTP статус 400
+
+### HTTP Request
+
+`PUT http://verbatoria.ru/api/v1/clients/:client_id:/:child_id:.json`
+
+### Параметры
+
+Parameter | Required | Description
+--------- | ------- | -----------
+name | true | Имя ребенка
+birth_day | true | Дата рождения ребенка
+
+## Просмотр
+
+<aside>
+Данный метод требует валидной сессии. Необходимо передать  *access_token* в
+заголовке HTTP запроса.
+</aside>
+
+> Пример кода
+
+```shell
+curl "http://verbatoria.ru/api/v1/clients/10/children/50.json"
+--header "access_token: 7827nd88ju98dj29084d28j9048"
+```
