@@ -60,6 +60,71 @@ password | true | Пароль пользователя
 При успешной авторизации код ответа 201, при неуспешной 422
 </aside>
 
+# Восстановление пароля
+
+> Пример кода
+
+```shell
+curl "http://verbatoria.ru/api/v1/verbatolog/restore_password.json" --request POST --data-binary
+'{"phone":"+79031234567"}'
+```
+
+> Ответ
+
+```json
+{
+  "message": "recovery_hash was sent by sms"
+}
+```
+### HTTP Request
+
+`POST http://verbatoria.ru/api/v1/verbatolog/restore_password.json`
+
+### Параметры
+
+Parameter | Required | Description
+--------- | ------- | -----------
+phone | true | Телефон пользователя
+
+<aside>
+При успешной обработке запроса код ответа 200, если нейрометрист не найден по
+указанному номеру телефона 404
+</aside>
+
+# Изменение пароля
+
+> Пример кода
+
+```shell
+curl "http://verbatoria.ru/api/v1/verbatolog/reset_password.json" --request POST --data-binary
+'{"phone":"+79031234567", "recovery_hash":"b306615629698929532de020007df9ec5e3632ee", "password":"NePassW0rD%" }'
+```
+
+> Ответ
+
+```json
+{
+  "message": "password was updated"
+}
+```
+### HTTP Request
+
+`POST http://verbatoria.ru/api/v1/verbatolog/reset_password.json`
+
+### Параметры
+
+Parameter | Required | Description
+--------- | ------- | -----------
+phone | true | Телефон пользователя
+recovery_hash | true | Код восстановления, полученный по смс
+password | true | Новый пароль
+
+<aside>
+При успешной обработке запроса код ответа 200, если нейрометрист не найден по
+указанному номеру телефона или код восстановления некорректен - 404, если не
+указан пароль - 400
+</aside>
+
 # Получение информации об авторизованном Нейрометристе
 
 <aside>
