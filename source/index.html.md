@@ -172,23 +172,41 @@ curl "http://verbatoria.ru/api/v1/verbatolog/current/events.json"
 > Ответ
 
 ```json
-[
-  {
-    "id": 1,
-    "start_at": "2017-05-01T12:00:00.000+04:00",
-    "end_at": "2017-05-01T13:00:00.000+04:00",
-    "child": {
-      "id": 1,
-      "name": "Василий Пупкин",
-      "birth_day": "2007-01-01"
-    }
+{
+  "total_entries": 1,
+  "per_page": 25,
+  "current_page": 1,
+  "next_page": null,
+  "previous_page": null,
+  "data": {
+    [
+      {
+        "id": 1,
+        "start_at": "2017-05-01T12:00:00.000+04:00",
+        "end_at": "2017-05-01T13:00:00.000+04:00",
+        "child": {
+          "id": 1,
+          "name": "Василий Пупкин",
+          "birth_day": "2007-01-01"
+        }
+      }
+    ]
   }
-]
+}
 ```
 
 ### HTTP Request
 
 `GET http://verbatoria.ru/api/v1/verbatolog/current/events.json`
+
+### Параметры
+
+Parameter | Required | Description
+--------- | ------- | -----------
+per_page | false | Число записей на страницу, по умолчанию 25
+page | false | Текущая страница, по умолчанию 1, индексация начинается с единицы
+from_time | false | При фильтрации за период, задает время с которого искать события (по полю start_at)
+to_time | false | При фильтрации за период, задает время до которого искать события (по полю start_at)
 
 # Старт сессии нейрометрии
 
