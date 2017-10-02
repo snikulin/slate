@@ -297,6 +297,53 @@ curl "http://verbatoria.ru/api/v1/reports/5/finalize.json" --request POST
 
 # Работа с клиентами
 
+## Поиск
+
+<aside>
+Данный метод требует валидной сессии. Необходимо передать  *access_token* в
+заголовке HTTP запроса.
+</aside>
+
+> Пример кода
+
+```shell
+curl "http://verbatoria.ru/api/v1/clients.json?query=7903"
+--header "access_token: 7827nd88ju98dj29084d28j9048"
+```
+> Ответ
+
+```json
+{
+  "total_entries": 1,
+  "per_page": 25,
+  "current_page": 1,
+  "next_page": null,
+  "previous_page": null,
+  "data": {
+    [
+      {
+        "id": 1,
+        "name": "Ivan Ivanov",
+        "phone": "+79031234567",
+        "email": "ivan@example.com"
+      }
+    ]
+  }
+}
+```
+
+### HTTP Request
+
+`GET http://verbatoria.ru/api/v1/clients.json`
+
+### Параметры
+
+Parameter | Required | Description
+--------- | ------- | -----------
+query | false | Подстрока поиска, поиск ведется по всем полям (name, phone, email)
+per_page | false | Число записей на страницу, по умолчанию 25
+page | false | Текущая страница, по умолчанию 1, индексация начинается с единицы
+
 ## Добавление
 
 <aside>
