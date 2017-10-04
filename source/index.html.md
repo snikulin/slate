@@ -187,7 +187,8 @@ curl "http://verbatoria.ru/api/v1/verbatolog/current/events.json"
         "child": {
           "id": 1,
           "name": "Василий Пупкин",
-          "birth_day": "2007-01-01"
+          "birth_day": "2007-01-01",
+          "client_id": 1
         }
       }
     ]
@@ -325,7 +326,8 @@ curl "http://verbatoria.ru/api/v1/clients.json?query=7903"
         "id": 1,
         "name": "Ivan Ivanov",
         "phone": "+79031234567",
-        "email": "ivan@example.com"
+        "email": "ivan@example.com",
+        "children": [{"id"=>1}, {"id"=>2}]
       }
     ]
   }
@@ -421,6 +423,51 @@ curl "http://verbatoria.ru/api/v1/clients/10.json"
 ```
 # Работа с данными о детях
 
+## Поиск
+
+<aside>
+Данный метод требует валидной сессии. Необходимо передать  *access_token* в
+заголовке HTTP запроса.
+</aside>
+
+> Пример кода
+
+```shell
+curl "http://verbatoria.ru/api/v1/children.json?query=Ivan"
+--header "access_token: 7827nd88ju98dj29084d28j9048"
+```
+> Ответ
+
+```json
+{
+  "total_entries": 1,
+  "per_page": 25,
+  "current_page": 1,
+  "next_page": null,
+  "previous_page": null,
+  "data": {
+    [
+      {
+        "id": 1,
+        "name": "Ivan Ivanov",
+        "client_id": 1
+      }
+    ]
+  }
+}
+```
+
+### HTTP Request
+
+`GET http://verbatoria.ru/api/v1/children.json`
+
+### Параметры
+
+Parameter | Required | Description
+--------- | ------- | -----------
+query | false | Подстрока поиска, поиск ведется по  имени ребенка
+per_page | false | Число записей на страницу, по умолчанию 25
+page | false | Текущая страница, по умолчанию 1, индексация начинается с единицы
 ## Добавление
 
 <aside>
